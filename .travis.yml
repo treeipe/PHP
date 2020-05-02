@@ -1,0 +1,27 @@
+language: bash
+
+env:
+  - FILE=Dockerfile
+
+services:
+  - docker
+
+before_script:
+  - docker images -a
+  - echo "$REGISTRY_TOKEN" | docker login --username "$REGISTRY_USERNAME" --password-stdin
+  - chmod +x build.sh
+
+jobs:
+  include:
+    - stage: build
+      install: skip
+      if: branch = develop
+      script:
+        - export SUFFIX='-rc'
+        - ./build.sh
+    - stage: release
+      if: branch = master
+      install: skip
+      script:
+        - export SUFFIX=''
+        - ./build.sh
